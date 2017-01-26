@@ -1,6 +1,5 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import itertools
 import os
 
 
@@ -15,12 +14,14 @@ def generate_from_files(*files):
     Yields:
         str: the next line from one of the files
     """
-    files_iterators = (itertools.cycle(open(f)) for f in files)
-    for file_iterator in itertools.cycle(files_iterators):
-        try:
-            yield next(file_iterator)
-        except StopIteration:
-            pass
+    files_iterators = tuple(open(f) for f in files if os.stat(f).st_size)
+    while True:
+        for file_iterator in files_iterators:
+            try:
+                yield next(file_iterator)
+            except StopIteration:
+                file_iterator.seek(0)
+                yield next(file_iterator)
 
 # a simple test code
 if __name__ == '__main__':
