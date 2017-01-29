@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+from itertools import imap
 
 
 def merge(*iterables):
@@ -23,7 +24,7 @@ def merge(*iterables):
         [0, 1, 3]
     """
     iterators = []
-    for iterator in map(iter, iterables):
+    for iterator in imap(iter, iterables):
         try:
             iterators.append([iterator.next(), iterator.next])
         except StopIteration:
@@ -32,11 +33,8 @@ def merge(*iterables):
     while iterators:
         iterators.sort(key=lambda x: x[0])
         min_value, next_value = iterators[0]
+        yield min_value
         try:
             iterators[0][0] = next_value()
         except StopIteration:
             iterators.pop(0)
-        yield min_value
-
-
-#print list(merge((), (0, 1, 3, 10), (5, 7, 8, 9)))

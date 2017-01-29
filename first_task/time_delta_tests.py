@@ -27,14 +27,15 @@ class TimeDeltaConverterTests(unittest.TestCase):
         test_data = {'0s': 0, '10s': 10, '70.5s': 71, '100.4s': 100,
                      '0m': 0, '4m': 240, '5.5m': 330, '10.7m': 642,
                      '0h': 0, '2h': 7200, '4.4h': 15840, '101h': 363600,
-                     '0d': 0, '1d': 86400, '4.6d': 397440, '75.2d': 6497280}
+                     '0d': 0, '1d': 86400, '4.6d': 397440, '75.2d': 6497280,
+                     '15m1.2s': 901, '2d3m4s': 172984, '4h3': 14403, 'm3s': 63}
         for test_input in test_data:
             result = time_delta_converter(test_input)
             self.assertEquals(result, test_data[test_input], self.message.format(test_input, test_data[test_input], result))
 
     def test_exceptions(self):
         """Are incorrect input values processed correctly?"""
-        test_data = ('10seconds', '1y', 'year', '')
+        test_data = ('10seconds', '1y', 'year', '', '1d2d', '1.5d3.3h2s3s')
         for test_input in test_data:
             with self.assertRaises(ValueError, msg='ValueError is not raised with {} as input value'.format(test_input)):
                 time_delta_converter(test_input)

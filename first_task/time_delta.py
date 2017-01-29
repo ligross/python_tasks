@@ -3,6 +3,10 @@
 import re
 from datetime import timedelta
 
+UNITS = {'d': 'days', 'h': 'hours', 'm': 'minutes', 's': 'seconds'}
+PARSE_TEMPLATE = re.compile(r'(?P<value>\d*\.?\d*)?(?P<unit>d|h|m|s)?')
+FORMAT_TEMPLATE = re.compile(r'^({0})+$'.format(PARSE_TEMPLATE.pattern))
+
 
 def time_delta_converter(time_str):
     """Convert  the time delta string to integer seconds.
@@ -29,21 +33,24 @@ def time_delta_converter(time_str):
         >>> time_delta_converter('15')
         15
 
+        >>> time_delta_converter('1.5d15s')
+        129615
+
         >>> time_delta_converter('30seconds')
         Traceback (most recent call last):
         ...
         ValueError: Incorrect input string format.
     """
-    result = time_delta_converter.template.match(time_str)
-    if not result or not any(result.groups()):
+    if not time_str or not FORMAT_TEMPLATE.match(time_str):
         raise ValueError('Incorrect input string format.')
-    unit = next((k for k, v in result.groupdict().iteritems() if v and k != 'value'), 'seconds')
-    value = float(result.groupdict()['value'] or 1)
-    return int(round(timedelta(**{unit: value}).total_seconds()))
 
-
-time_delta_converter.template = re.compile(
-    r'^(?P<value>\d*\.?\d*)?((?P<days>d)|(?P<hours>h)|(?P<minutes>m)|(?P<seconds>s))?$')
-
-if __name__ == '__main__':
-    print time_delta_converter('1s')
+    values_units = {}
+    for match in PARSE_TEMPLATE.finditer(time_str):
+        if not any(match.groups()):
+            break
+        value, unit = match.groupdict().values()
+        unit = UNITS.get(unit, 'seconds')
+        if values_units.has_key(unit):
+            raise ValueError('Duplicated unit specifier found.')
+        values_units[unit] = float(value or 1)
+    return int(round(timedelta(**values_units).total_seconds()))
